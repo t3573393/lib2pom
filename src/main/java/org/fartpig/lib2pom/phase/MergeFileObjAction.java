@@ -1,0 +1,68 @@
+package org.fartpig.lib2pom.phase;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.fartpig.lib2pom.constant.GlobalConst;
+import org.fartpig.lib2pom.entity.ArtifactObj;
+import org.fartpig.lib2pom.entity.DummyObj;
+import org.fartpig.lib2pom.entity.FileObj;
+import org.fartpig.lib2pom.util.ArtifactUtil;
+import org.fartpig.lib2pom.util.ToolLogger;
+
+public class MergeFileObjAction {
+
+	private static String CURRENT_PHASE = GlobalConst.PHASE_MERGE_FILEOBJ;
+
+	public MergeFileObjAction() {
+		ToolLogger log = ToolLogger.getInstance();
+		log.setCurrentPhase(CURRENT_PHASE);
+	}
+
+	public Map<String, List<FileObj>> mergeFileObj(List<FileObj> fileObjs) {
+		Map<String, FileObj> unionArtifactMap = new HashMap<String, FileObj>();
+		Map<String, FileObj> conflictArtifactMap = new HashMap<String, FileObj>();
+		Map<String, FileObj> unknownArtifactMap = new HashMap<String, FileObj>();
+
+		ToolLogger log = ToolLogger.getInstance();
+		// 将查询的结果：按照版本号，名称 以及完整的所有原来的jar信息： 得到所需要的
+		// 输出并集
+		// 冲突集合
+		// 未解析集合
+		for (FileObj aFileObj : fileObjs) {
+			if (aFileObj instanceof ArtifactObj) {
+				ArtifactObj newFileObj = (ArtifactObj) aFileObj;
+				if (!newFileObj.isResolve()) {
+					log.info("unknownArtifact:" + aFileObj.uniqueName() + "-fileName:" + aFileObj.getFileFullName());
+					unknownArtifactMap.put(aFileObj.uniqueName(), newFileObj);
+				} else {
+					String artifactId = newFileObj.getArtifactId();
+					if (!unionArtifactMap.containsKey(artifactId)) {
+						log.info("unionArtifactMap:" + artifactId);
+						unionArtifactMap.put(artifactId, aFileObj);
+					} else {
+						ArtifactObj oldFileObj = (ArtifactObj) unionArtifactMap.get(artifactId);
+						log.info("conflictArtifactMap:" + artifactId + "-old:" + oldFileObj.uniqueName() + "-new:"
+								+ newFileObj.uniqueName());
+						if (ArtifactUtil.isVersionNew(newFileObj.getVersion(), oldFileObj.getVersion())) {
+							unionArtifactMap.put(artifactId, newFileObj);
+						}
+						conflictArtifactMap.put(oldFileObj.uniqueName(), oldFileObj);
+						conflictArtifactMap.put(newFileObj.uniqueName(), newFileObj);
+					}
+				}
+
+			} else if (aFileObj instanceof DummyObj) {
+				unknownArtifactMap.put(aFileObj.uniqueName(), aFileObj);
+			}
+		}
+
+		Map<String, List<FileObj>> result = new HashMap<String, List<FileObj>>();
+		result.put(GlobalConst.SET_UNION, new ArrayList<FileObj>(unionArtifactMap.values()));
+		result.put(GlobalConst.SET_CONFLICT, new ArrayList<FileObj>(conflictArtifactMap.values()));
+		result.put(GlobalConst.SET_UNKNOWN, new ArrayList<FileObj>(unknownArtifactMap.values()));
+		return result;
+	}
+}

@@ -1,3 +1,4 @@
+<dependencies>
 <#list resolveObjs as aFileObj>
 <#if aFileObj.scope== 'compile'>
 <dependency>
@@ -35,3 +36,4 @@
     <systemPath><#noparse>${basedir}</#noparse>/lib/${aFileObj.fileFullName}</systemPath>
 </dependency>
 </#list>
+</dependencies>

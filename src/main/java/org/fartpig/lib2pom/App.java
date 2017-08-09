@@ -10,6 +10,7 @@ import org.fartpig.lib2pom.entity.ArtifactObj;
 import org.fartpig.lib2pom.entity.FileObj;
 import org.fartpig.lib2pom.phase.CompactFileObjsAction;
 import org.fartpig.lib2pom.phase.FetchFileNamesAction;
+import org.fartpig.lib2pom.phase.InflateLibsAction;
 import org.fartpig.lib2pom.phase.MergeFileObjAction;
 import org.fartpig.lib2pom.phase.OutputPomResultAction;
 import org.fartpig.lib2pom.phase.PrintOutMergeResultAction;
@@ -91,7 +92,7 @@ public class App {
 		List<FileObj> compactResult = compactFileObjs(origObjs, mergetResult);
 		outputPomResult(compactResult, outPutPomFileName);
 		if (needInflate) {
-			inflateLibs(outPutPomFileName, inflateOutPath);
+			inflateLibs(outPutPomFileName, inputLibPath, inflateOutPath);
 		}
 
 	}
@@ -141,11 +142,8 @@ public class App {
 		action.outputPomResult(fileObjs, outputFileName);
 	}
 
-	public static void inflateLibs(String pomFileName, String inflateOutPath) {
-		String phase = GlobalConst.PHASE_INFLATE_LIBS;
-		ToolLogger log = ToolLogger.getInstance();
-		log.setCurrentPhase(phase);
-		// TODO 将pom调用对应的 mvn 或者是 接口展开 得到所有的lib
-
+	public static void inflateLibs(String pomFileName, String inputLibPath, String inflateOutPath) {
+		InflateLibsAction action = new InflateLibsAction();
+		action.inflateLibs(pomFileName, inputLibPath, inflateOutPath);
 	}
 }

@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
+import org.fartpig.lib2pom.archivahelper.ArchivaBrowseHelper;
 import org.fartpig.lib2pom.archivahelper.ArchivaSearchHelper;
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.entity.ArtifactObj;
@@ -40,6 +41,7 @@ public class RetrieveDependencisAction {
 		Set<String> resolveArtifactSet = new HashSet<String>();
 
 		ArchivaSearchHelper archivaSearchHelper = new ArchivaSearchHelper();
+		ArchivaBrowseHelper archivaBrowseHelper = new ArchivaBrowseHelper();
 		// 先解析自身，然后通过自身获取所依赖的artifact信息， 并将依赖的结果返回
 		for (ArtifactObj aObj : artifactObjs) {
 			List<ArtifactObj> searchResult = archivaSearchHelper.searchByArtifactObj(aObj);
@@ -79,7 +81,7 @@ public class RetrieveDependencisAction {
 			ArtifactObj aObj = artifactObjQueue.poll();
 
 			if (aObj.isResolve()) {
-				List<ArtifactObj> childArtifactObjs = archivaSearchHelper.getFirstLevelTreeEntriesByArtifactObj(aObj);
+				List<ArtifactObj> childArtifactObjs = archivaBrowseHelper.getFirstLevelTreeEntriesByArtifactObj(aObj);
 				for (ArtifactObj aArtifactObj : childArtifactObjs) {
 					aArtifactObj.setResolve(true);
 					if (!resolveArtifactSet.contains(aArtifactObj.uniqueName())) {

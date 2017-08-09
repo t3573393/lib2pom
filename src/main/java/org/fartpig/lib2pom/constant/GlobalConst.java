@@ -19,4 +19,7 @@ public final class GlobalConst {
 	// 未解析集合
 	public static final String SET_UNKNOWN = "unknown";
 
+	// 属性
+	public static final String ATTR_URL = "url";
+
 }

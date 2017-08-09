@@ -11,7 +11,7 @@ public class ArtifactObj extends FileObj {
 	private String packaging;
 	private String classifier;
 	private String repositoryId;
-	private Map<String, String> extraInfo;
+	private Map<String, String> extraInfo = new HashMap<String, String>();
 	private boolean isResolve;
 
 	private Map<String, ArtifactObj> dependencis = new HashMap<String, ArtifactObj>();
@@ -19,6 +19,18 @@ public class ArtifactObj extends FileObj {
 	public String formateFileName() {
 		return String.format("artifactId[%s]-version[%s]-classifier[%s]-packaging[%s]", artifactId, version, classifier,
 				packaging);
+	}
+
+	public String getFileFullName() {
+		String fileFullName = super.getFileFullName();
+		if (fileFullName == null || fileFullName.length() == 0) {
+			if (version == null) {
+				fileFullName = String.format("%s.%s", artifactId, packaging);
+			} else {
+				fileFullName = String.format("%s-%s.%s", artifactId, version, packaging);
+			}
+		}
+		return fileFullName;
 	}
 
 	public String toString() {

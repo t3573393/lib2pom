@@ -1,6 +1,7 @@
 package org.fartpig.lib2pom;
 
 import org.fartpig.lib2pom.constant.GlobalConst;
+import org.fartpig.lib2pom.phase.InflateLibsAction;
 import org.fartpig.lib2pom.util.ToolException;
 
 import junit.framework.Test;
@@ -43,8 +44,19 @@ public class AppTest extends TestCase {
 
 	public void testAppArgs1() {
 		App app = new App();
-		String[] args = { "-p", "D:\\workspace-my\\test-classes\\lib" };
+		String[] args = { "-if", "D:\\workspace-my\\lib2pom\\target\\test-classes\\targetlib", "-p",
+				"D:\\workspace-my\\test-classes\\lib" };
+		// String[] args = { "-if",
+		// "D:\\workspace-my\\lib2pom\\target\\test-classes\\targetlib", "-p",
+		// "D:\\ecif-web\\module-web\\target\\ecifconsole-web\\WEB-INF\\lib" };
 		app.main(args);
+	}
+
+	public void testInflateLibsAction() {
+		InflateLibsAction action = new InflateLibsAction();
+		action.inflateLibs("D:\\workspace-my\\lib2pom\\target\\classes\\pom.xml",
+				"D:\\ecif-web\\module-web\\target\\ecifconsole-web\\WEB-INF\\lib",
+				"D:\\workspace-my\\lib2pom\\target\\test-classes\\targetlib");
 	}
 
 	public void testAppArgs2() {

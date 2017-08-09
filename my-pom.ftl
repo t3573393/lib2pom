@@ -1,3 +1,4 @@
+<dependencies>
 <#list resolveObjs as aFileObj>
 <#if aFileObj.scope== 'compile'>
 <dependency>
@@ -31,7 +32,8 @@
 <dependency>
     <groupId>unknown</groupId>
     <artifactId>${aFileObj.fileName}</artifactId>
-    <scope>${aFileObj.scope}</scope>
+    <scope>system</scope>
     <systemPath><#noparse>${basedir}</#noparse>/lib/${aFileObj.fileFullName}</systemPath>
 </dependency>
 </#list>
+</dependencies>

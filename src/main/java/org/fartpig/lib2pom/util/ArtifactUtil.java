@@ -7,10 +7,11 @@ import java.nio.charset.Charset;
 import java.util.List;
 
 import org.apache.commons.io.FileUtils;
-import org.fartpig.lib2pom.archivahelper.ArchivaBrowseHelper;
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.entity.ArtifactObj;
 import org.fartpig.lib2pom.entity.FileObj;
+import org.fartpig.lib2pom.jarinfo.JarArtifactInfo;
+import org.fartpig.lib2pom.jarinfo.JarInfoManagement;
 import org.fartpig.lib2pom.phase.ResolveFileNamesAction;
 
 public class ArtifactUtil {
@@ -21,11 +22,11 @@ public class ArtifactUtil {
 	}
 
 	public static void filterOutSpecialPrefix() {
-		// 使用仓库中的artifactId来分析出可能解析不出来的特殊jar，将其导入到special_prefix.tb文件中，
-		ArchivaBrowseHelper browseHelper = new ArchivaBrowseHelper();
+		// use the resolve file name function to get the specical jar file
+		// name，then write to special_prefix.tb
 		ToolLogger log = ToolLogger.getInstance();
-
-		List<ArtifactObj> objs = browseHelper.getAllArtifactByRepositoryId("internal");
+		JarArtifactInfo jarArtifactInfo = JarInfoManagement.getJarArtifactInfo();
+		List<ArtifactObj> objs = jarArtifactInfo.getAllArtifactByRepositoryId("internal");
 		StringBuilder sb = new StringBuilder();
 		ResolveFileNamesAction action = new ResolveFileNamesAction();
 		for (ArtifactObj aObj : objs) {

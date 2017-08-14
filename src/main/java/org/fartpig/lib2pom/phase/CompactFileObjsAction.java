@@ -21,11 +21,12 @@ public class CompactFileObjsAction {
 	}
 
 	public List<FileObj> compactFileObjs(List<FileObj> origObjs, Map<String, List<FileObj>> mergeResult) {
-		// 按照兼容性规则， 将三个集合和原始集合进行合并得到准确的jar列表
+		// compact rule by the original file content, get exact jar files by
+		// three sets
 		List<FileObj> result = new ArrayList<FileObj>();
 		Set<String> artifactKeySet = new HashSet<String>();
 
-		// 使用原始列表对集合中对象打标
+		// mark by the original jar list
 		List<FileObj> unionObjs = mergeResult.get(GlobalConst.SET_UNION);
 		markFileObjs(origObjs, unionObjs);
 
@@ -35,7 +36,7 @@ public class CompactFileObjsAction {
 		List<FileObj> unknownObjs = mergeResult.get(GlobalConst.SET_UNKNOWN);
 		markFileObjs(origObjs, unknownObjs);
 
-		// 将合集,冲突以及未知的输出:由于冲突中包含了对应裁剪后的结果
+		// output the union, conflict, unknown set, with the mark result
 		for (FileObj aFileObj : unionObjs) {
 			if (!aFileObj.isNeedExclude() && !artifactKeySet.contains(aFileObj.uniqueName())) {
 				artifactKeySet.add(aFileObj.uniqueName());

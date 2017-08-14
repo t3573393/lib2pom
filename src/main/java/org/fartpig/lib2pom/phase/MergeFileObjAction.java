@@ -27,10 +27,11 @@ public class MergeFileObjAction {
 		Map<String, FileObj> unknownArtifactMap = new HashMap<String, FileObj>();
 
 		ToolLogger log = ToolLogger.getInstance();
-		// 将查询的结果：按照版本号，名称 以及完整的所有原来的jar信息： 得到所需要的
-		// 输出并集
-		// 冲突集合
-		// 未解析集合
+		// merge the query result by artifactId, version and all jar info
+		// unionSet: the whole resolve artifact, with the largest version by
+		// conflict jar
+		// conflictSet: the conflict jar set, include the same artifactIds
+		// unknownSet: resolve fail jar files
 		for (FileObj aFileObj : fileObjs) {
 			if (aFileObj instanceof ArtifactObj) {
 				ArtifactObj newFileObj = (ArtifactObj) aFileObj;

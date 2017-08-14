@@ -1,21 +1,26 @@
 package org.fartpig.lib2pom.phase;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.jar.JarFile;
 
 import org.apache.commons.io.IOUtils;
+import org.fartpig.lib2pom.constant.GlobalConfig;
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.entity.ArtifactObj;
 import org.fartpig.lib2pom.entity.DummyObj;
 import org.fartpig.lib2pom.entity.FileObj;
+import org.fartpig.lib2pom.jarinfo.JarFileInfo;
+import org.fartpig.lib2pom.jarinfo.JarInfoManagement;
 import org.fartpig.lib2pom.util.StringUtil;
 import org.fartpig.lib2pom.util.ToolLogger;
 
-//根据文件名获取对应的文件元信息
+//resolve the artifact object info by file name
 public class ResolveFileNamesAction {
 
 	private static String CURRENT_PHASE = GlobalConst.PHASE_RESOLVE_FILE_NAMES;
@@ -30,7 +35,7 @@ public class ResolveFileNamesAction {
 	}
 
 	private void loadSpecialPrefix() {
-		// 载入特殊 artifactId的前缀， 进行特殊包名的解析规则
+		// load special atrifact id prefix fro the special file name
 		try {
 			InputStream input = Thread.currentThread().getContextClassLoader()
 					.getResourceAsStream(GlobalConst.SPECIAL_PREFIX_FILE_NAME);
@@ -114,7 +119,7 @@ public class ResolveFileNamesAction {
 		String fileName = aFileName.substring(0, extIndex);
 		packaging = aFileName.substring(extIndex + 1);
 		log.info(String.format("packaging:%s", packaging));
-		// 逆序遍历法
+		// reverse the list
 		String[] fileSegments = fileName.split("[-]");
 
 		List<String> artifactIdSegments = new LinkedList<String>();
@@ -166,13 +171,33 @@ public class ResolveFileNamesAction {
 			}
 
 		} else {
-			DummyObj obj = new DummyObj();
-			obj.setFileFullName(aFileName);
-			obj.setFileName(fileName);
-			obj.setFileEx(packaging);
+			JarFileInfo jarFileInfo = JarInfoManagement.getJarFileInfo();
+			String inputPath = GlobalConfig.instance().getInputLibPath();
+			JarFile jarFile;
+			try {
+				jarFile = new JarFile(new File(String.format("%s/%s", inputPath, aFileName)));
+				aFileObj = jarFileInfo.resolveByManifest(jarFile);
+				if (aFileObj != null) {
+					aFileObj.setFileFullName(aFileName);
+					aFileObj.setFileName(fileName);
+					aFileObj.setFileEx(packaging);
+				}
 
-			aFileObj = obj;
-			log.warning(String.format(" DummyObj from %s:%s", aFileName, aFileObj.formateFileName()));
+				log.info(String.format("from %s:%s", aFileName, aFileObj.formateFileName()));
+			} catch (IOException e) {
+				ToolLogger.getInstance().error("error:", e);
+			}
+
+			if (aFileObj == null) {
+				DummyObj obj = new DummyObj();
+				obj.setFileFullName(aFileName);
+				obj.setFileName(fileName);
+				obj.setFileEx(packaging);
+
+				aFileObj = obj;
+				log.warning(String.format(" DummyObj from %s:%s", aFileName, aFileObj.formateFileName()));
+			}
+
 		}
 
 		return aFileObj;

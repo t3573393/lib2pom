@@ -29,6 +29,8 @@ public class GlobalConfig {
 	private boolean needInflate = true;
 	private boolean needPrintoutResult = true;
 
+	private String jarInfoSource = "archiva";
+
 	private String archivaBaseUrl = "http://192.111.25.32:9080/archiva/";
 	private String archivaRestServicesPath = "restServices";
 	private String archivaUser = "guest";
@@ -55,6 +57,8 @@ public class GlobalConfig {
 		needPrintoutResult = Boolean
 				.valueOf(configProperties.getProperty("needInflate", String.valueOf(needPrintoutResult)));
 
+		jarInfoSource = configProperties.getProperty("jarInfoSource", jarInfoSource);
+
 		archivaBaseUrl = configProperties.getProperty("archivaBaseUrl", archivaBaseUrl);
 		archivaRestServicesPath = configProperties.getProperty("archivaRestServicesPath", archivaRestServicesPath);
 		archivaUser = configProperties.getProperty("archivaUser", archivaUser);
@@ -66,6 +70,9 @@ public class GlobalConfig {
 		log.info("inflateOutPath:" + inflateOutPath);
 		log.info("needInflate:" + needInflate);
 		log.info("needPrintoutResult:" + needPrintoutResult);
+
+		log.info("jarInfoSource:" + jarInfoSource);
+
 		log.info("archivaBaseUrl:" + archivaBaseUrl);
 		log.info("archivaRestServicesPath:" + archivaRestServicesPath);
 		log.info("archivaUser:" + archivaUser);
@@ -146,6 +153,14 @@ public class GlobalConfig {
 
 	public void setArchivaPassword(String archivaPassword) {
 		this.archivaPassword = archivaPassword;
+	}
+
+	public String getJarInfoSource() {
+		return jarInfoSource;
+	}
+
+	public void setJarInfoSource(String jarInfoSource) {
+		this.jarInfoSource = jarInfoSource;
 	}
 
 }

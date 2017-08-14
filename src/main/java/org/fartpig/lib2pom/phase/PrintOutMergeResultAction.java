@@ -19,7 +19,7 @@ public class PrintOutMergeResultAction {
 	}
 
 	public void printOutMergeResult(Map<String, List<FileObj>> mergeResult) {
-		// 将合并的结果集输出到到控制台
+		// output the merget result to console
 		StringBuilder sb = new StringBuilder();
 
 		for (Map.Entry<String, List<FileObj>> aEntry : mergeResult.entrySet()) {

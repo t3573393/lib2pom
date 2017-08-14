@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import org.fartpig.lib2pom.archivahelper.ArchivaBrowseHelper;
-import org.fartpig.lib2pom.archivahelper.ArchivaSearchHelper;
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.entity.ArtifactObj;
+import org.fartpig.lib2pom.jarinfo.JarArtifactInfo;
+import org.fartpig.lib2pom.jarinfo.JarInfoManagement;
 import org.fartpig.lib2pom.util.ArchivaUtil;
 import org.fartpig.lib2pom.util.ToolLogger;
 
-// 根据信息调用接口获取依赖关系和完善自身信息，可能有会返回多个需要解决冲突
+// invoke the jar info interfact to query the dependencies and infos
 public class RetrieveDependencisAction {
 
 	private static String CURRENT_PHASE = GlobalConst.PHASE_RETRIEVE_DEPENDENCIS;
@@ -40,17 +40,16 @@ public class RetrieveDependencisAction {
 		List<ArtifactObj> extraArtifactObjs = new ArrayList<ArtifactObj>();
 		Set<String> resolveArtifactSet = new HashSet<String>();
 
-		ArchivaSearchHelper archivaSearchHelper = new ArchivaSearchHelper();
-		ArchivaBrowseHelper archivaBrowseHelper = new ArchivaBrowseHelper();
-		// 先解析自身，然后通过自身获取所依赖的artifact信息， 并将依赖的结果返回
+		JarArtifactInfo jarArtifactInfo = JarInfoManagement.getJarArtifactInfo();
+		// first resolve self, then get the dependencies, last return it
 		for (ArtifactObj aObj : artifactObjs) {
-			List<ArtifactObj> searchResult = archivaSearchHelper.searchByArtifactObj(aObj);
+			List<ArtifactObj> searchResult = jarArtifactInfo.searchByArtifactObj(aObj);
 			if (searchResult.size() != 0) {
-				// 如果找不到jar结果，默认给一个jar的结果
+				// if no jar, default one
 				boolean isFindJar = false;
 				for (ArtifactObj aResult : searchResult) {
 					if (isFindJar) {
-						// 这里需要解决把source test-source等之类的无效
+						// filter the source test-source classifier
 						if (aResult.getClassifier() != null) {
 							continue;
 						}
@@ -102,7 +101,7 @@ public class RetrieveDependencisAction {
 			if (aObj.isResolve()) {
 				ToolLogger.getInstance()
 						.info("getFirstLevelTreeEntriesByArtifactObj parent: " + aObj.formateFileName());
-				List<ArtifactObj> childArtifactObjs = archivaBrowseHelper.getFirstLevelTreeEntriesByArtifactObj(aObj);
+				List<ArtifactObj> childArtifactObjs = jarArtifactInfo.getFirstLevelTreeEntriesByArtifactObj(aObj);
 				for (ArtifactObj aArtifactObj : childArtifactObjs) {
 					ToolLogger.getInstance().info(
 							"getFirstLevelTreeEntriesByArtifactObj child result: " + aArtifactObj.formateFileName());

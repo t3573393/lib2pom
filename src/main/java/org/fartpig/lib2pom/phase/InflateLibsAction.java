@@ -13,9 +13,10 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
-import org.fartpig.lib2pom.archivahelper.ArchivaBrowseHelper;
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.entity.ArtifactObj;
+import org.fartpig.lib2pom.jarinfo.JarArtifactInfo;
+import org.fartpig.lib2pom.jarinfo.JarInfoManagement;
 import org.fartpig.lib2pom.util.ToolLogger;
 import org.jdom2.Document;
 import org.jdom2.Element;
@@ -35,7 +36,7 @@ public class InflateLibsAction {
 	}
 
 	public void inflateLibs(String pomFileName, String inputLibPath, String inflateOutPath) {
-		// 将pom调用 接口展开 得到所有的lib
+		// fetch all lib by the result pom content
 		List<ArtifactObj> artifactObjs = resolveArtifactObjByPom(pomFileName);
 
 		File inflateFilePath = new File(inflateOutPath);
@@ -43,11 +44,11 @@ public class InflateLibsAction {
 			inflateFilePath.mkdirs();
 		}
 
-		ArchivaBrowseHelper browserHelper = new ArchivaBrowseHelper();
+		JarArtifactInfo jarArtifactInfo = JarInfoManagement.getJarArtifactInfo();
 		for (ArtifactObj artifactObj : artifactObjs) {
 			if (artifactObj.isResolve()) {
-				browserHelper.getArtifactDownloadInfos(artifactObj);
-				// 下载失败使用本地数据
+				jarArtifactInfo.getArtifactDownloadInfos(artifactObj);
+				// download artifact fail, then copy the file locally
 				if (!downloadArtifactObj(artifactObj, inflateOutPath)) {
 					copyArtifactObj(artifactObj, inputLibPath, inflateOutPath);
 				}

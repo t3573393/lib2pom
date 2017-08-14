@@ -31,7 +31,7 @@ public class OutputPomResultAction {
 	}
 
 	public void outputPomResult(List<FileObj> fileObjs, String outputFileName) {
-		// 将信息转化成对应的 pom 文件内容， 可以使用freemark的格式
+		// render the jar info to the pom file, with freemarker template
 		Configuration cfg = new Configuration();
 		try {
 			ClassTemplateLoader loader = new ClassTemplateLoader(App.class, "/");
@@ -40,6 +40,8 @@ public class OutputPomResultAction {
 			Template template = cfg.getTemplate("my-pom.ftl");
 
 			Map<String, Object> data = new HashMap<String, Object>();
+			// TODO group the artifactObj by the groupId, use the same version
+			// in the same groupId; generate the version list
 
 			List<FileObj> resolveObjs = new ArrayList<FileObj>();
 			List<FileObj> systemObjs = new ArrayList<FileObj>();
@@ -54,7 +56,7 @@ public class OutputPomResultAction {
 			data.put("resolveObjs", resolveObjs);
 			data.put("systemObjs", systemObjs);
 
-			// 使用日志输出这两个集合内容
+			// output the render data to console
 			StringBuilder sb = new StringBuilder();
 
 			sb.append("resolveObjs");

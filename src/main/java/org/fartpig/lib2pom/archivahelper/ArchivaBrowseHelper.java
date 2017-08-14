@@ -42,7 +42,7 @@ public class ArchivaBrowseHelper extends CxfBaseHelper {
 	// public String authzHeader = "Basic "
 	// + org.apache.cxf.common.util.Base64Utility.encode(("username" +
 	// ":password").getBytes());
-	// 需要尝试将账号密码加上
+	// try to add password
 	// public String authzHeader = "Basic " +
 	// org.apache.cxf.common.util.Base64Utility.encode(("guest" +
 	// ":").getBytes());
@@ -120,7 +120,6 @@ public class ArchivaBrowseHelper extends CxfBaseHelper {
 		BrowseService browseService = getBrowseService(false);
 		List<TreeEntry> treeEntries;
 		try {
-
 			treeEntries = findTreeEntryInCache(artifactObj);
 			if (treeEntries == null) {
 				treeEntries = browseService.getTreeEntries(artifactObj.getGroupId(), artifactObj.getArtifactId(),

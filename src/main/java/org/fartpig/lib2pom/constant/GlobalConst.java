@@ -12,18 +12,19 @@ public final class GlobalConst {
 	public static final String PHASE_OUTPUT_POM_RESULT = "output_pom_result";
 	public static final String PHASE_INFLATE_LIBS = "inflate_libs";
 
-	// 输出并集
+	// union set
 	public static final String SET_UNION = "union";
-	// 冲突集合
+	// conflict set
 	public static final String SET_CONFLICT = "conflict";
-	// 未解析集合
+	// unknown set
 	public static final String SET_UNKNOWN = "unknown";
 
-	// 属性
+	// attrs
 	public static final String ATTR_URL = "url";
 	public static final String ATTR_SYSTEMPATH = "systemPath";
 
 	public static final String SPECIAL_PREFIX_FILE_NAME = "special_prefix.tb";
+	public static final String COMMON_PACKAGE_PREFIX_FILE_NAME = "common_package.tb";
 
 	public static String LINE_SEPARATOR = "\r\n";
 

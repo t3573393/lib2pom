@@ -21,7 +21,7 @@ import org.fartpig.lib2pom.util.ToolException;
 import org.fartpig.lib2pom.util.ToolLogger;
 
 /**
- * Hello world!
+ * application entry
  *
  */
 public class App {
@@ -89,6 +89,8 @@ public class App {
 
 			List<String> libFileNames = fetchFileNames(inputLibPath);
 			List<FileObj> fileObjs = resolveFileNames(libFileNames);
+			// TODO the DummyObj, try use the jar resolve to do, by
+			// resolveJarFiles
 			List<FileObj> origObjs = new ArrayList<FileObj>(fileObjs);
 
 			List<ArtifactObj> extraArtifactObjs = retrieveDependencis(filterArtifactObj(fileObjs));
@@ -116,6 +118,11 @@ public class App {
 	public static List<FileObj> resolveFileNames(List<String> fileNames) {
 		ResolveFileNamesAction action = new ResolveFileNamesAction();
 		return action.resolveFileNames(fileNames);
+	}
+
+	public static List<ArtifactObj> resolveJarFiles(String inputLibPath, List<String> fileNames) {
+		// TODO move the jar file resolve to this action
+		return null;
 	}
 
 	public static List<ArtifactObj> filterArtifactObj(List<FileObj> fileObjs) {

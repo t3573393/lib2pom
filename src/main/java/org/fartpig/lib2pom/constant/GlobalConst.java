@@ -21,5 +21,10 @@ public final class GlobalConst {
 
 	// 属性
 	public static final String ATTR_URL = "url";
+	public static final String ATTR_SYSTEMPATH = "systemPath";
+
+	public static final String SPECIAL_PREFIX_FILE_NAME = "special_prefix.tb";
+
+	public static String LINE_SEPARATOR = "\r\n";
 
 }

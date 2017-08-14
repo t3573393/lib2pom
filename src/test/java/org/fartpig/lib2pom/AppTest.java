@@ -2,6 +2,7 @@ package org.fartpig.lib2pom;
 
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.phase.InflateLibsAction;
+import org.fartpig.lib2pom.util.ArtifactUtil;
 import org.fartpig.lib2pom.util.ToolException;
 
 import junit.framework.Test;
@@ -44,12 +45,16 @@ public class AppTest extends TestCase {
 
 	public void testAppArgs1() {
 		App app = new App();
-		String[] args = { "-if", "D:\\workspace-my\\lib2pom\\target\\test-classes\\targetlib", "-p",
-				"D:\\workspace-my\\test-classes\\lib" };
 		// String[] args = { "-if",
 		// "D:\\workspace-my\\lib2pom\\target\\test-classes\\targetlib", "-p",
-		// "D:\\ecif-web\\module-web\\target\\ecifconsole-web\\WEB-INF\\lib" };
+		// "D:\\workspace-my\\test-classes\\lib" };
+		String[] args = { "-if", "D:\\workspace-my\\lib2pom\\target\\test-classes\\ecif-targetlib", "-p",
+				"D:\\ecif-web\\module-web\\target\\ecifconsole-web\\WEB-INF\\lib" };
 		app.main(args);
+	}
+
+	public void testFilterOutSpecialPrefix() {
+		ArtifactUtil.filterOutSpecialPrefix();
 	}
 
 	public void testInflateLibsAction() {

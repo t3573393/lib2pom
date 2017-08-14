@@ -12,7 +12,6 @@ import org.fartpig.lib2pom.util.ToolLogger;
 public class PrintOutMergeResultAction {
 
 	private static String CURRENT_PHASE = GlobalConst.PHASE_PRINTOUT_MERGE_RESULT;
-	private static String LINE_SEPARATOR = "\r\n";
 
 	public PrintOutMergeResultAction() {
 		ToolLogger log = ToolLogger.getInstance();
@@ -26,7 +25,7 @@ public class PrintOutMergeResultAction {
 		for (Map.Entry<String, List<FileObj>> aEntry : mergeResult.entrySet()) {
 			sb.append(aEntry.getKey());
 			sb.append("->");
-			sb.append(LINE_SEPARATOR);
+			sb.append(GlobalConst.LINE_SEPARATOR);
 
 			for (FileObj aFileObj : aEntry.getValue()) {
 				if (aFileObj instanceof ArtifactObj) {
@@ -40,10 +39,10 @@ public class PrintOutMergeResultAction {
 					DummyObj dummyObj = (DummyObj) aFileObj;
 					sb.append(dummyObj.formateFileName());
 				}
-				sb.append(LINE_SEPARATOR);
+				sb.append(GlobalConst.LINE_SEPARATOR);
 			}
 			sb.append("---------------");
-			sb.append(LINE_SEPARATOR);
+			sb.append(GlobalConst.LINE_SEPARATOR);
 
 		}
 

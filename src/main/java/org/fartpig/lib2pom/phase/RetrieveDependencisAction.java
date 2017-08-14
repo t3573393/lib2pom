@@ -46,13 +46,23 @@ public class RetrieveDependencisAction {
 		for (ArtifactObj aObj : artifactObjs) {
 			List<ArtifactObj> searchResult = archivaSearchHelper.searchByArtifactObj(aObj);
 			if (searchResult.size() != 0) {
+				// 如果找不到jar结果，默认给一个jar的结果
+				boolean isFindJar = false;
 				for (ArtifactObj aResult : searchResult) {
+					if (isFindJar) {
+						// 这里需要解决把source test-source等之类的无效
+						if (aResult.getClassifier() != null) {
+							continue;
+						}
+					}
+
 					if (aResult.getArtifactId().equals(aObj.getArtifactId())
-							&& aResult.getVersion().equals(aObj.getVersion())) {
+							&& aResult.getVersion().equals(aObj.getVersion())
+							&& aResult.getPackaging().equals(aObj.getPackaging())) {
 						// priority override
 						int newIndex = reposityPriorityIndex(aResult.getRepositoryId());
 						int oldIndex = reposityPriorityIndex(aObj.getRepositoryId());
-						if (newIndex < oldIndex) {
+						if (newIndex < oldIndex || aObj.getRepositoryId() == null) {
 							ArtifactObj firstObj = aResult;
 							aObj.setArtifactId(firstObj.getArtifactId());
 							aObj.setClassifier(firstObj.getClassifier());
@@ -64,9 +74,18 @@ public class RetrieveDependencisAction {
 							ToolLogger.getInstance().info("resolve:" + aObj.formateFileName());
 						}
 
+						if (aResult.getClassifier() == null) {
+							isFindJar = true;
+						}
+
 						resolveArtifactSet.add(aObj.uniqueName());
 					}
 				}
+
+				if (!isFindJar) {
+					aObj.setPackaging("jar");
+				}
+
 			} else {
 				aObj.setScope("system");
 			}
@@ -81,8 +100,12 @@ public class RetrieveDependencisAction {
 			ArtifactObj aObj = artifactObjQueue.poll();
 
 			if (aObj.isResolve()) {
+				ToolLogger.getInstance()
+						.info("getFirstLevelTreeEntriesByArtifactObj parent: " + aObj.formateFileName());
 				List<ArtifactObj> childArtifactObjs = archivaBrowseHelper.getFirstLevelTreeEntriesByArtifactObj(aObj);
 				for (ArtifactObj aArtifactObj : childArtifactObjs) {
+					ToolLogger.getInstance().info(
+							"getFirstLevelTreeEntriesByArtifactObj child result: " + aArtifactObj.formateFileName());
 					aArtifactObj.setResolve(true);
 					if (!resolveArtifactSet.contains(aArtifactObj.uniqueName())) {
 						extraArtifactObjs.add(aArtifactObj);

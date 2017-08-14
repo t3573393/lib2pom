@@ -17,6 +17,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.BuildPluginManager;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.fartpig.lib2pom.util.ToolLogger;
 import org.sonatype.aether.RepositorySystemSession;
 
 public class DependencyResolveHelper {
@@ -41,8 +42,7 @@ public class DependencyResolveHelper {
 					configuration(element(name("outputFile"), "resolveDependency.txt")),
 					executionEnvironment(project, session, pluginManager));
 		} catch (MojoExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ToolLogger.getInstance().error("error:", e);
 		}
 	}
 

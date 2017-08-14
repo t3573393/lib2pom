@@ -4,7 +4,7 @@
 
 	<groupId>org.fartpig</groupId>
 	<artifactId>lib2pom</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.1.0-RELEASE</version>
 	<packaging>jar</packaging>
 
 	<name>lib2pom</name>
@@ -48,6 +48,8 @@
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
+					<finalName>lib2pom</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
 				</configuration>
 				<executions>
 					<execution>
@@ -87,7 +89,7 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.12.4</version>
 				<configuration>
-					<skipTests>false</skipTests>
+					<skipTests>true</skipTests>
 					<systemPropertyVariables>
 						<jacoco-agent.destfile>target/jacoco.exec</jacoco-agent.destfile>
 					</systemPropertyVariables>

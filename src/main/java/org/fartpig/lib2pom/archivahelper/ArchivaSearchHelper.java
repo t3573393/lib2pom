@@ -12,39 +12,33 @@ import org.apache.archiva.rest.api.services.ArchivaRestServiceException;
 import org.apache.archiva.rest.api.services.SearchService;
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
 import org.apache.cxf.jaxrs.client.WebClient;
+import org.fartpig.lib2pom.constant.GlobalConfig;
 import org.fartpig.lib2pom.entity.ArtifactObj;
 import org.fartpig.lib2pom.util.ArchivaUtil;
 import org.fartpig.lib2pom.util.ToolLogger;
 
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
-public class ArchivaSearchHelper {
+public class ArchivaSearchHelper extends CxfBaseHelper {
 
 	// guest with an empty password
-	public static String guestAuthzHeader = "Basic "
-			+ org.apache.cxf.common.util.Base64Utility.encode(("guest" + ":").getBytes());
+	private String authzHeader = "Basic " + org.apache.cxf.common.util.Base64Utility.encode(("guest" + ":").getBytes());
 
-	// with an other login/password
-	// public String authzHeader = "Basic "
-	// + org.apache.cxf.common.util.Base64Utility.encode(("username" +
-	// ":password").getBytes());
-	// 需要尝试将账号密码加上
-	// public String authzHeader = "Basic " +
-	// org.apache.cxf.common.util.Base64Utility.encode(("guest" +
-	// ":").getBytes());
+	public ArchivaSearchHelper() {
+		super();
+		GlobalConfig config = GlobalConfig.instance();
+		authzHeader = "Basic " + org.apache.cxf.common.util.Base64Utility
+				.encode((config.getArchivaUser() + ":" + config.getArchivaPassword()).getBytes());
+	}
 
 	private String getBaseUrl() {
-		return "http://192.111.25.32:9080/archiva/";
+		return GlobalConfig.instance().getArchivaBaseUrl();
 	}
 
 	private String getRestServicesPath() {
-		return "restServices";
+		return GlobalConfig.instance().getArchivaRestServicesPath();
 	}
 
-	// with an other login/password
-	// public String authzHeader =
-	// "Basic " + org.apache.cxf.common.util.Base64Utility.encode( ( "login" +
-	// ":password" ).getBytes() );
 	public List<ArtifactObj> searchByArtifactObj(ArtifactObj artifactObj) {
 		SearchService searchService = getSearchServer();
 		SearchRequest searchRequest = new SearchRequest();
@@ -62,8 +56,7 @@ public class ArchivaSearchHelper {
 				result.add(aObj);
 			}
 		} catch (ArchivaRestServiceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ToolLogger.getInstance().error("error:", e);
 		}
 		return result;
 	}
@@ -73,8 +66,8 @@ public class ArchivaSearchHelper {
 				getBaseUrl() + "/" + getRestServicesPath() + "/archivaServices/", SearchService.class,
 				Collections.singletonList(new JacksonJaxbJsonProvider()));
 		// to add authentification
-		if (guestAuthzHeader != null) {
-			WebClient.client(service).header("Authorization", guestAuthzHeader);
+		if (authzHeader != null) {
+			WebClient.client(service).header("Authorization", authzHeader);
 		}
 		// to configure read timeout
 		WebClient.getConfig(service).getHttpConduit().getClient().setReceiveTimeout(100000000);

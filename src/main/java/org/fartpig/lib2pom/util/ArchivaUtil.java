@@ -11,7 +11,12 @@ public final class ArchivaUtil {
 		artifactObj.setArtifactId(artifact.getArtifactId());
 		artifactObj.setClassifier(artifact.getClassifier());
 		artifactObj.setGroupId(artifact.getGroupId());
-		artifactObj.setPackaging(artifact.getPackaging());
+		if (artifact.getPackaging() == null) {
+			artifactObj.setPackaging(artifact.getFileExtension());
+		} else {
+			artifactObj.setPackaging(artifact.getPackaging());
+		}
+
 		artifactObj.setVersion(artifact.getVersion());
 		artifactObj.setRepositoryId(artifact.getRepositoryId());
 	}

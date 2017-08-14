@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.fartpig.lib2pom.constant.GlobalConfig;
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.entity.ArtifactObj;
 import org.fartpig.lib2pom.entity.FileObj;
@@ -16,7 +17,6 @@ import org.fartpig.lib2pom.phase.OutputPomResultAction;
 import org.fartpig.lib2pom.phase.PrintOutMergeResultAction;
 import org.fartpig.lib2pom.phase.ResolveFileNamesAction;
 import org.fartpig.lib2pom.phase.RetrieveDependencisAction;
-import org.fartpig.lib2pom.util.PathUtil;
 import org.fartpig.lib2pom.util.ToolException;
 import org.fartpig.lib2pom.util.ToolLogger;
 
@@ -27,74 +27,85 @@ import org.fartpig.lib2pom.util.ToolLogger;
 public class App {
 
 	public static void main(String[] args) {
-		String phase = GlobalConst.PHASE_INIT_PARAMS;
-		ToolLogger log = ToolLogger.getInstance();
-		log.setCurrentPhase(phase);
+		try {
+			String phase = GlobalConst.PHASE_INIT_PARAMS;
+			ToolLogger log = ToolLogger.getInstance();
+			log.setCurrentPhase(phase);
 
-		String appRootPath = PathUtil.getProjectPath();
-		String inputLibPath = String.format("%s%slib", appRootPath, File.separator);
-		String outPutPomFileName = String.format("%s%spom.xml", appRootPath, File.separator);
-		String inflateOutPath = String.format("%s%stargetlib", appRootPath, File.separator);
+			GlobalConfig config = GlobalConfig.instance();
 
-		boolean needInflate = false;
-		boolean needPrintoutResult = false;
+			String appRootPath = GlobalConfig.getApprootpath();
+			String inputLibPath = config.getInputLibPath();
+			String outPutPomFileName = config.getOutPutPomFileName();
+			String inflateOutPath = config.getInflateOutPath();
 
-		if (args.length == 0) {
-			inputLibPath = String.format("%s%slib", appRootPath, File.separator);
-			log.info(String.format("set inputLibPath:%s", inputLibPath));
-		} else if (args.length == 1 && !args[0].startsWith("-")) {
-			inputLibPath = args[0];
-			log.info(String.format("set inputLibPath by args:%s", inputLibPath));
-		} else {
-			int lastIndex = args.length - 1;
-			boolean useDefaultLib = false;
-			for (int i = 0; i < args.length; i++) {
-				if ("-o".equals(args[i])) {
-					if ((i + 1) >= args.length) {
-						throw new ToolException(phase, "please set the outPutPomFileName");
+			boolean needInflate = config.isNeedInflate();
+			boolean needPrintoutResult = config.isNeedPrintoutResult();
+
+			if (args.length == 0) {
+				inputLibPath = String.format("%s%slib", appRootPath, File.separator);
+				log.info(String.format("set inputLibPath:%s", inputLibPath));
+			} else if (args.length == 1 && !args[0].startsWith("-")) {
+				inputLibPath = args[0];
+				log.info(String.format("set inputLibPath by args:%s", inputLibPath));
+			} else {
+				int lastIndex = args.length - 1;
+				boolean useDefaultLib = false;
+				for (int i = 0; i < args.length; i++) {
+					if ("-o".equals(args[i])) {
+						if ((i + 1) >= args.length) {
+							throw new ToolException(phase, "please set the outPutPomFileName");
+						}
+						outPutPomFileName = String.format("%s%spom.xml", args[i + 1], File.separator);
+						useDefaultLib = useDefaultLib || (i + 1) == lastIndex;
+						log.info(String.format("set outPutPomFileName by args:%s", outPutPomFileName));
+					} else if ("--print".equals(args[i]) || "-p".equals(args[i])) {
+						needPrintoutResult = true;
+						useDefaultLib = useDefaultLib || i == lastIndex;
+						log.info(String.format("set needPrintoutResult: true"));
+					} else if ("--inflate".equals(args[i]) || "-if".equals(args[i])) {
+						if ((i + 1) >= args.length) {
+							throw new ToolException(phase, "please set the inflateOutPath");
+						}
+						needInflate = true;
+						inflateOutPath = args[i + 1];
+						useDefaultLib = useDefaultLib || (i + 1) == lastIndex;
+						log.info(String.format("set inflateOutPath by args:%s", inflateOutPath));
+						log.info(String.format("set needInflate: true"));
 					}
-					outPutPomFileName = String.format("%s%spom.xml", args[i + 1], File.separator);
-					useDefaultLib = useDefaultLib || (i + 1) == lastIndex;
-					log.info(String.format("set outPutPomFileName by args:%s", outPutPomFileName));
-				} else if ("--print".equals(args[i]) || "-p".equals(args[i])) {
-					needPrintoutResult = true;
-					useDefaultLib = useDefaultLib || i == lastIndex;
-					log.info(String.format("set needPrintoutResult: true"));
-				} else if ("--inflate".equals(args[i]) || "-if".equals(args[i])) {
-					if ((i + 1) >= args.length) {
-						throw new ToolException(phase, "please set the inflateOutPath");
-					}
-					needInflate = true;
-					inflateOutPath = args[i + 1];
-					useDefaultLib = useDefaultLib || (i + 1) == lastIndex;
-					log.info(String.format("set inflateOutPath by args:%s", inflateOutPath));
-					log.info(String.format("set needInflate: true"));
+				}
+
+				if (useDefaultLib == false) {
+					inputLibPath = args[args.length - 1];
+					log.info(String.format("set inputLibPath: %s", inputLibPath));
 				}
 			}
 
-			if (useDefaultLib == false) {
-				inputLibPath = args[args.length - 1];
-				log.info(String.format("set inputLibPath: %s", inputLibPath));
+			config.setInflateOutPath(inflateOutPath);
+			config.setInputLibPath(inputLibPath);
+			config.setOutPutPomFileName(outPutPomFileName);
+			config.setNeedInflate(needInflate);
+			config.setNeedPrintoutResult(needPrintoutResult);
+
+			List<String> libFileNames = fetchFileNames(inputLibPath);
+			List<FileObj> fileObjs = resolveFileNames(libFileNames);
+			List<FileObj> origObjs = new ArrayList<FileObj>(fileObjs);
+
+			List<ArtifactObj> extraArtifactObjs = retrieveDependencis(filterArtifactObj(fileObjs));
+			fileObjs.addAll(extraArtifactObjs);
+			Map<String, List<FileObj>> mergetResult = mergeFileObj(fileObjs);
+			if (needPrintoutResult) {
+				printOutMergeResult(mergetResult);
 			}
+
+			List<FileObj> compactResult = compactFileObjs(origObjs, mergetResult);
+			outputPomResult(compactResult, outPutPomFileName);
+			if (needInflate) {
+				inflateLibs(outPutPomFileName, inputLibPath, inflateOutPath);
+			}
+		} catch (Exception e) {
+			ToolLogger.getInstance().error("error:", e);
 		}
-
-		List<String> libFileNames = fetchFileNames(inputLibPath);
-		List<FileObj> fileObjs = resolveFileNames(libFileNames);
-		List<FileObj> origObjs = new ArrayList<FileObj>(fileObjs);
-
-		List<ArtifactObj> extraArtifactObjs = retrieveDependencis(filterArtifactObj(fileObjs));
-		fileObjs.addAll(extraArtifactObjs);
-		Map<String, List<FileObj>> mergetResult = mergeFileObj(fileObjs);
-		if (needPrintoutResult) {
-			printOutMergeResult(mergetResult);
-		}
-
-		List<FileObj> compactResult = compactFileObjs(origObjs, mergetResult);
-		outputPomResult(compactResult, outPutPomFileName);
-		if (needInflate) {
-			inflateLibs(outPutPomFileName, inputLibPath, inflateOutPath);
-		}
-
 	}
 
 	public static List<String> fetchFileNames(String path) {
@@ -146,4 +157,5 @@ public class App {
 		InflateLibsAction action = new InflateLibsAction();
 		action.inflateLibs(pomFileName, inputLibPath, inflateOutPath);
 	}
+
 }

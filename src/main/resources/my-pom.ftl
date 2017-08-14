@@ -23,6 +23,7 @@
 <dependency>
     <groupId>${aFileObj.groupId}</groupId>
     <artifactId>${aFileObj.artifactId}</artifactId>
+    <version>${aFileObj.version}</version>
     <scope>${aFileObj.scope}</scope>
     <systemPath><#noparse>${basedir}</#noparse>/lib/${aFileObj.fileFullName}</systemPath>
 </dependency>
@@ -30,9 +31,10 @@
 </#list>
 <#list systemObjs as aFileObj>
 <dependency>
-    <groupId>unknown</groupId>
+    <groupId>${aFileObj.groupId!'unknown'}</groupId>
     <artifactId>${aFileObj.fileName}</artifactId>
-    <scope>${aFileObj.scope}</scope>
+    <version>1.0</version>
+    <scope>system</scope>
     <systemPath><#noparse>${basedir}</#noparse>/lib/${aFileObj.fileFullName}</systemPath>
 </dependency>
 </#list>

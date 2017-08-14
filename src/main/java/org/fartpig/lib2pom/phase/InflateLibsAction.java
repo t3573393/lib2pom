@@ -47,7 +47,10 @@ public class InflateLibsAction {
 		for (ArtifactObj artifactObj : artifactObjs) {
 			if (artifactObj.isResolve()) {
 				browserHelper.getArtifactDownloadInfos(artifactObj);
-				downloadArtifactObj(artifactObj, inflateOutPath);
+				// 下载失败使用本地数据
+				if (!downloadArtifactObj(artifactObj, inflateOutPath)) {
+					copyArtifactObj(artifactObj, inputLibPath, inflateOutPath);
+				}
 			} else {
 				copyArtifactObj(artifactObj, inputLibPath, inflateOutPath);
 			}
@@ -79,6 +82,8 @@ public class InflateLibsAction {
 				aArtifactObj.setClassifier(retrieveChildText(dependencyElement, "classifier"));
 				aArtifactObj.setPackaging(retrieveChildText(dependencyElement, "type"));
 				if ("system".equals(aArtifactObj.getScope())) {
+					aArtifactObj.getExtraInfo().put(GlobalConst.ATTR_SYSTEMPATH,
+							retrieveChildText(dependencyElement, "systemPath"));
 					aArtifactObj.setResolve(false);
 				} else {
 					aArtifactObj.setResolve(true);
@@ -92,11 +97,9 @@ public class InflateLibsAction {
 				result.add(aArtifactObj);
 			}
 		} catch (JDOMException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ToolLogger.getInstance().error("error:", e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ToolLogger.getInstance().error("error:", e);
 		}
 
 		return result;
@@ -104,21 +107,27 @@ public class InflateLibsAction {
 
 	public void copyArtifactObj(ArtifactObj artifactObj, String srcPath, String inflateOutPath) {
 		try {
-			String srcFileName = String.format("%s/%s", srcPath, artifactObj.getFileFullName());
-			String destFileName = String.format("%s/%s", inflateOutPath, artifactObj.getFileFullName());
+			String fileFullName = artifactObj.getFileFullName();
+			if ("system".equals(artifactObj.getScope())) {
+				String systemPath = artifactObj.getExtraInfo().get(GlobalConst.ATTR_SYSTEMPATH);
+				int fileNameIndex = systemPath.lastIndexOf("/");
+				fileFullName = systemPath.substring(fileNameIndex + 1);
+			}
+			String srcFileName = String.format("%s/%s", srcPath, fileFullName);
+			String destFileName = String.format("%s/%s", inflateOutPath, fileFullName);
 			ToolLogger.getInstance()
 					.info("copy artifactObj srcFileName:" + srcFileName + "- destFileName:" + destFileName);
 			FileUtils.copyFile(new File(srcFileName), new File(destFileName));
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ToolLogger.getInstance().error("error:", e);
 		}
 	}
 
-	public void downloadArtifactObj(ArtifactObj artifactObj, String inflateOutPath) {
+	public boolean downloadArtifactObj(ArtifactObj artifactObj, String inflateOutPath) {
 		String url = artifactObj.getExtraInfo().get(GlobalConst.ATTR_URL);
 		if (url == null || url.length() == 0) {
 			ToolLogger.getInstance().info("artifactObj:" + artifactObj.uniqueName() + "- not found url");
+			return false;
 		}
 
 		HttpGet httpGet = new HttpGet(url);
@@ -132,13 +141,12 @@ public class InflateLibsAction {
 				FileOutputStream os = new FileOutputStream(new File(outputFileName));
 				entity.writeTo(os);
 			}
+			return true;
 		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ToolLogger.getInstance().error("error:", e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			ToolLogger.getInstance().error("error:", e);
 		}
-
+		return false;
 	}
 }

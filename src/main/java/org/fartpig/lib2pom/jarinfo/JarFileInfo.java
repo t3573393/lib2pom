@@ -1,10 +1,10 @@
 package org.fartpig.lib2pom.jarinfo;
 
-import java.util.jar.JarFile;
+import java.io.File;
 
 import org.fartpig.lib2pom.entity.ArtifactObj;
 
 public interface JarFileInfo {
 
-	public ArtifactObj resolveByManifest(JarFile jarFile);
+	public ArtifactObj resolveByManifest(File File);
 }

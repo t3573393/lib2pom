@@ -8,10 +8,12 @@ import java.util.Map;
 import org.fartpig.lib2pom.constant.GlobalConfig;
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.entity.ArtifactObj;
+import org.fartpig.lib2pom.entity.DummyObj;
 import org.fartpig.lib2pom.entity.FileObj;
 import org.fartpig.lib2pom.phase.CompactFileObjsAction;
 import org.fartpig.lib2pom.phase.FetchFileNamesAction;
 import org.fartpig.lib2pom.phase.InflateLibsAction;
+import org.fartpig.lib2pom.phase.JarResolveAction;
 import org.fartpig.lib2pom.phase.MergeFileObjAction;
 import org.fartpig.lib2pom.phase.OutputPomResultAction;
 import org.fartpig.lib2pom.phase.PrintOutMergeResultAction;
@@ -89,12 +91,36 @@ public class App {
 
 			List<String> libFileNames = fetchFileNames(inputLibPath);
 			List<FileObj> fileObjs = resolveFileNames(libFileNames);
-			// TODO the DummyObj, try use the jar resolve to do, by
+			// the DummyObj, try use the jar resolve to do, by
 			// resolveJarFiles
-			List<FileObj> origObjs = new ArrayList<FileObj>(fileObjs);
+			List<DummyObj> dummyObjs = filterArtifactObjWithMatcher(fileObjs, new FilterMatcher() {
+				@Override
+				public boolean match(FileObj fileObj) {
+					return fileObj instanceof DummyObj;
+				}
+			});
+			List<ArtifactObj> jarResolveArtifactObjs = resolveJarFiles(inputLibPath, dummyObjs);
+			// replace the jar resolve result in the fileObjs
+			for (int i = 0; i < fileObjs.size(); i++) {
+				for (ArtifactObj aJarResolveObj : jarResolveArtifactObjs) {
+					if (fileObjs.get(i).getFileFullName().equals(aJarResolveObj.getFileFullName())) {
+						fileObjs.set(i, aJarResolveObj);
+						break;
+					}
+				}
+			}
 
-			List<ArtifactObj> extraArtifactObjs = retrieveDependencis(filterArtifactObj(fileObjs));
+			List<FileObj> origObjs = new ArrayList<FileObj>(fileObjs);
+			List<ArtifactObj> resolveArtifactObjs = filterArtifactObjWithMatcher(fileObjs, new FilterMatcher() {
+				@Override
+				public boolean match(FileObj fileObj) {
+					return fileObj instanceof ArtifactObj;
+				}
+			});
+
+			List<ArtifactObj> extraArtifactObjs = retrieveDependencis(resolveArtifactObjs);
 			fileObjs.addAll(extraArtifactObjs);
+
 			Map<String, List<FileObj>> mergetResult = mergeFileObj(fileObjs);
 			if (needPrintoutResult) {
 				printOutMergeResult(mergetResult);
@@ -120,16 +146,21 @@ public class App {
 		return action.resolveFileNames(fileNames);
 	}
 
-	public static List<ArtifactObj> resolveJarFiles(String inputLibPath, List<String> fileNames) {
-		// TODO move the jar file resolve to this action
-		return null;
+	public static List<ArtifactObj> resolveJarFiles(String inputLibPath, List<DummyObj> dummyObjs) {
+		JarResolveAction action = new JarResolveAction();
+		return action.resolveJarFiles(inputLibPath, dummyObjs);
 	}
 
-	public static List<ArtifactObj> filterArtifactObj(List<FileObj> fileObjs) {
-		List<ArtifactObj> result = new ArrayList<ArtifactObj>(fileObjs.size());
+	public interface FilterMatcher {
+		public boolean match(FileObj fileObj);
+	}
+
+	public static <T extends FileObj> List<T> filterArtifactObjWithMatcher(List<FileObj> fileObjs,
+			FilterMatcher matcher) {
+		List<T> result = new ArrayList<T>(fileObjs.size());
 		for (FileObj aFileObj : fileObjs) {
-			if (aFileObj instanceof ArtifactObj) {
-				result.add((ArtifactObj) aFileObj);
+			if (matcher.match(aFileObj)) {
+				result.add((T) aFileObj);
 			}
 		}
 		return result;

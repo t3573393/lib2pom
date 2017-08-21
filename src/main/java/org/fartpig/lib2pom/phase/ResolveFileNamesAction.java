@@ -1,22 +1,17 @@
 package org.fartpig.lib2pom.phase;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.jar.JarFile;
 
 import org.apache.commons.io.IOUtils;
-import org.fartpig.lib2pom.constant.GlobalConfig;
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.entity.ArtifactObj;
 import org.fartpig.lib2pom.entity.DummyObj;
 import org.fartpig.lib2pom.entity.FileObj;
-import org.fartpig.lib2pom.jarinfo.JarFileInfo;
-import org.fartpig.lib2pom.jarinfo.JarInfoManagement;
 import org.fartpig.lib2pom.util.StringUtil;
 import org.fartpig.lib2pom.util.ToolLogger;
 
@@ -171,32 +166,13 @@ public class ResolveFileNamesAction {
 			}
 
 		} else {
-			JarFileInfo jarFileInfo = JarInfoManagement.getJarFileInfo();
-			String inputPath = GlobalConfig.instance().getInputLibPath();
-			JarFile jarFile;
-			try {
-				jarFile = new JarFile(new File(String.format("%s/%s", inputPath, aFileName)));
-				aFileObj = jarFileInfo.resolveByManifest(jarFile);
-				if (aFileObj != null) {
-					aFileObj.setFileFullName(aFileName);
-					aFileObj.setFileName(fileName);
-					aFileObj.setFileEx(packaging);
-				}
+			DummyObj obj = new DummyObj();
+			obj.setFileFullName(aFileName);
+			obj.setFileName(fileName);
+			obj.setFileEx(packaging);
 
-				log.info(String.format("from %s:%s", aFileName, aFileObj.formateFileName()));
-			} catch (IOException e) {
-				ToolLogger.getInstance().error("error:", e);
-			}
-
-			if (aFileObj == null) {
-				DummyObj obj = new DummyObj();
-				obj.setFileFullName(aFileName);
-				obj.setFileName(fileName);
-				obj.setFileEx(packaging);
-
-				aFileObj = obj;
-				log.warning(String.format(" DummyObj from %s:%s", aFileName, aFileObj.formateFileName()));
-			}
+			aFileObj = obj;
+			log.warning(String.format(" DummyObj from %s:%s", aFileName, aFileObj.formateFileName()));
 
 		}
 

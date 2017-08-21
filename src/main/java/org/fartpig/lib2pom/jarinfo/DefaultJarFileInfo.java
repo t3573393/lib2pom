@@ -1,5 +1,6 @@
 package org.fartpig.lib2pom.jarinfo;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
@@ -64,10 +65,11 @@ public class DefaultJarFileInfo implements JarFileInfo {
 	}
 
 	@Override
-	public ArtifactObj resolveByManifest(JarFile jarFile) {
+	public ArtifactObj resolveByManifest(File file) {
 		// try use the jar META-INF file to retrieve the artifactId and version
 		// use the common package prefix table
 		try {
+			JarFile jarFile = new JarFile(file);
 			Manifest manifest = jarFile.getManifest();
 			String artifactId = null;
 			String version = null;
@@ -93,17 +95,17 @@ public class DefaultJarFileInfo implements JarFileInfo {
 
 			// try get the entry package info ,use the min path strategy
 			if (artifactId == null) {
-				int minDepth = 999;
 				String[] minPathDepths = null;
 				// TODO need use the file directory, clip the size
+				String lastDirectoryPath = null;
 				for (Enumeration<JarEntry> entries = jarFile.entries(); entries.hasMoreElements();) {
 					JarEntry entry = entries.nextElement();
+					String name = entry.getName();
+					ToolLogger.getInstance().info("entry name:" + name);
 
 					if (entry.isDirectory()) {
 						continue;
 					}
-
-					String name = entry.getName();
 
 					if (name.startsWith("META-INF")) {
 						continue;
@@ -117,10 +119,13 @@ public class DefaultJarFileInfo implements JarFileInfo {
 
 						String path = name.substring(0, name.lastIndexOf("/"));
 						String[] pathDepths = path.split("/");
-						if (pathDepths.length < minDepth) {
-							minDepth = pathDepths.length;
-							minPathDepths = pathDepths;
+						minPathDepths = pathDepths;
+
+						if (lastDirectoryPath == null) {
+							lastDirectoryPath = path;
+							break;
 						}
+
 					}
 				}
 

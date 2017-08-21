@@ -4,7 +4,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpEntity;
@@ -67,18 +69,38 @@ public class InflateLibsAction {
 	}
 
 	public List<ArtifactObj> resolveArtifactObjByPom(String pomFileName) {
+		Map<String, String> propertyMap = new HashMap<String, String>();
 		List<ArtifactObj> result = new ArrayList<ArtifactObj>();
+
 		SAXBuilder jdomBuilder = new SAXBuilder();
 		try {
 			Document dom = jdomBuilder.build(pomFileName);
 			XPathFactory factory = XPathFactory.instance();
-			XPathExpression<Element> expr = factory.compile("/dependencies/dependency", Filters.element());
-			List<Element> elements = expr.evaluate(dom);
+			XPathExpression<Element> exprProperty = factory.compile("/project/properties", Filters.element());
+			List<Element> propertyElements = exprProperty.evaluate(dom);
+			if (propertyElements.size() > 0) {
+				Element propertiesRootElement = propertyElements.get(0);
+				for (Element aPropertyElement : propertiesRootElement.getChildren()) {
+					propertyMap.put(aPropertyElement.getName(), aPropertyElement.getText());
+				}
+			}
+
+			XPathExpression<Element> exprDependency = factory.compile("/project/dependencies/dependency",
+					Filters.element());
+			List<Element> elements = exprDependency.evaluate(dom);
 			for (Element dependencyElement : elements) {
 				ArtifactObj aArtifactObj = new ArtifactObj();
 				aArtifactObj.setGroupId(retrieveChildText(dependencyElement, "groupId"));
 				aArtifactObj.setArtifactId(retrieveChildText(dependencyElement, "artifactId"));
 				aArtifactObj.setVersion(retrieveChildText(dependencyElement, "version"));
+				// replace the property version value
+				if (aArtifactObj.getVersion().startsWith("${")) {
+					String tempVersion = aArtifactObj.getVersion();
+					tempVersion = tempVersion.substring(2, tempVersion.length() - 1);
+					if (propertyMap.containsKey(tempVersion)) {
+						aArtifactObj.setVersion(propertyMap.get(tempVersion));
+					}
+				}
 				aArtifactObj.setScope(retrieveChildText(dependencyElement, "scope"));
 				aArtifactObj.setClassifier(retrieveChildText(dependencyElement, "classifier"));
 				aArtifactObj.setPackaging(retrieveChildText(dependencyElement, "type"));

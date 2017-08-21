@@ -1,3 +1,11 @@
+<project>
+<#if (propertyObjs?size>0)>
+<properties>
+	<#list propertyObjs as aPropertyObjs>
+	<${aPropertyObjs.property}>${aPropertyObjs.value}</${aPropertyObjs.property}>
+	</#list>
+</properties>
+</#if>
 <dependencies>
 <#list resolveObjs as aFileObj>
 <#if aFileObj.scope== 'compile'>
@@ -39,3 +47,4 @@
 </dependency>
 </#list>
 </dependencies>
+</project>

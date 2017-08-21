@@ -22,6 +22,17 @@ public class GlobalConfig {
 		return globalConfig;
 	}
 
+	public static GlobalConfig instanceByFile(File file) {
+		if (globalConfig == null) {
+			if (file != null) {
+				globalConfig = new GlobalConfig(file);
+			} else {
+				globalConfig = new GlobalConfig();
+			}
+		}
+		return globalConfig;
+	}
+
 	private String inputLibPath = String.format("%s%slib", appRootPath, File.separator);
 	private String outPutPomFileName = String.format("%s%spom.xml", appRootPath, File.separator);
 	private String inflateOutPath = String.format("%s%stargetlib", appRootPath, File.separator);
@@ -36,8 +47,23 @@ public class GlobalConfig {
 	private String archivaUser = "guest";
 	private String archivaPassword = "";
 
-	private GlobalConfig(String configName) {
+	private GlobalConfig() {
+	}
 
+	private GlobalConfig(File configFile) {
+		Properties configProperties = new Properties();
+		try {
+			configProperties.load(new BufferedInputStream(new FileInputStream(configFile)));
+
+		} catch (FileNotFoundException e) {
+			ToolLogger.getInstance().error("error:", e);
+		} catch (IOException e) {
+			ToolLogger.getInstance().error("error:", e);
+		}
+		fillDataByProperties(configProperties);
+	}
+
+	private GlobalConfig(String configName) {
 		Properties configProperties = new Properties();
 		try {
 			configProperties
@@ -48,7 +74,10 @@ public class GlobalConfig {
 		} catch (IOException e) {
 			ToolLogger.getInstance().error("error:", e);
 		}
+		fillDataByProperties(configProperties);
+	}
 
+	private void fillDataByProperties(Properties configProperties) {
 		inputLibPath = configProperties.getProperty("inputLibPath", inputLibPath);
 		outPutPomFileName = configProperties.getProperty("outPutPomFileName", outPutPomFileName);
 		inflateOutPath = configProperties.getProperty("inflateOutPath", inflateOutPath);
@@ -77,6 +106,7 @@ public class GlobalConfig {
 		log.info("archivaRestServicesPath:" + archivaRestServicesPath);
 		log.info("archivaUser:" + archivaUser);
 		log.info("archivaPassword:" + archivaPassword);
+
 	}
 
 	public String getInputLibPath() {

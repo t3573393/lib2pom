@@ -35,7 +35,6 @@ public class App {
 			log.setCurrentPhase(phase);
 
 			GlobalConfig config = GlobalConfig.instance();
-
 			String appRootPath = GlobalConfig.getApprootpath();
 			String inputLibPath = config.getInputLibPath();
 			String outPutPomFileName = config.getOutPutPomFileName();
@@ -89,50 +88,63 @@ public class App {
 			config.setNeedInflate(needInflate);
 			config.setNeedPrintoutResult(needPrintoutResult);
 
-			List<String> libFileNames = fetchFileNames(inputLibPath);
-			List<FileObj> fileObjs = resolveFileNames(libFileNames);
-			// the DummyObj, try use the jar resolve to do, by
-			// resolveJarFiles
-			List<DummyObj> dummyObjs = filterArtifactObjWithMatcher(fileObjs, new FilterMatcher() {
-				@Override
-				public boolean match(FileObj fileObj) {
-					return fileObj instanceof DummyObj;
-				}
-			});
-			List<ArtifactObj> jarResolveArtifactObjs = resolveJarFiles(inputLibPath, dummyObjs);
-			// replace the jar resolve result in the fileObjs
-			for (int i = 0; i < fileObjs.size(); i++) {
-				for (ArtifactObj aJarResolveObj : jarResolveArtifactObjs) {
-					if (fileObjs.get(i).getFileFullName().equals(aJarResolveObj.getFileFullName())) {
-						fileObjs.set(i, aJarResolveObj);
-						break;
-					}
-				}
-			}
+			invokeByGlobalConfig(config);
 
-			List<FileObj> origObjs = new ArrayList<FileObj>(fileObjs);
-			List<ArtifactObj> resolveArtifactObjs = filterArtifactObjWithMatcher(fileObjs, new FilterMatcher() {
-				@Override
-				public boolean match(FileObj fileObj) {
-					return fileObj instanceof ArtifactObj;
-				}
-			});
-
-			List<ArtifactObj> extraArtifactObjs = retrieveDependencis(resolveArtifactObjs);
-			fileObjs.addAll(extraArtifactObjs);
-
-			Map<String, List<FileObj>> mergetResult = mergeFileObj(fileObjs);
-			if (needPrintoutResult) {
-				printOutMergeResult(mergetResult);
-			}
-
-			List<FileObj> compactResult = compactFileObjs(origObjs, mergetResult);
-			outputPomResult(compactResult, outPutPomFileName);
-			if (needInflate) {
-				inflateLibs(outPutPomFileName, inputLibPath, inflateOutPath);
-			}
 		} catch (Exception e) {
 			ToolLogger.getInstance().error("error:", e);
+		}
+	}
+
+	public static void invokeByGlobalConfig(GlobalConfig config) {
+
+		String inputLibPath = config.getInputLibPath();
+		String outPutPomFileName = config.getOutPutPomFileName();
+		String inflateOutPath = config.getInflateOutPath();
+
+		boolean needInflate = config.isNeedInflate();
+		boolean needPrintoutResult = config.isNeedPrintoutResult();
+
+		List<String> libFileNames = fetchFileNames(inputLibPath);
+		List<FileObj> fileObjs = resolveFileNames(libFileNames);
+		// the DummyObj, try use the jar resolve to do, by
+		// resolveJarFiles
+		List<DummyObj> dummyObjs = filterArtifactObjWithMatcher(fileObjs, new FilterMatcher() {
+			@Override
+			public boolean match(FileObj fileObj) {
+				return fileObj instanceof DummyObj;
+			}
+		});
+		List<ArtifactObj> jarResolveArtifactObjs = resolveJarFiles(inputLibPath, dummyObjs);
+		// replace the jar resolve result in the fileObjs
+		for (int i = 0; i < fileObjs.size(); i++) {
+			for (ArtifactObj aJarResolveObj : jarResolveArtifactObjs) {
+				if (fileObjs.get(i).getFileFullName().equals(aJarResolveObj.getFileFullName())) {
+					fileObjs.set(i, aJarResolveObj);
+					break;
+				}
+			}
+		}
+
+		List<FileObj> origObjs = new ArrayList<FileObj>(fileObjs);
+		List<ArtifactObj> resolveArtifactObjs = filterArtifactObjWithMatcher(fileObjs, new FilterMatcher() {
+			@Override
+			public boolean match(FileObj fileObj) {
+				return fileObj instanceof ArtifactObj;
+			}
+		});
+
+		List<ArtifactObj> extraArtifactObjs = retrieveDependencis(resolveArtifactObjs);
+		fileObjs.addAll(extraArtifactObjs);
+
+		Map<String, List<FileObj>> mergetResult = mergeFileObj(fileObjs);
+		if (needPrintoutResult) {
+			printOutMergeResult(mergetResult);
+		}
+
+		List<FileObj> compactResult = compactFileObjs(origObjs, mergetResult);
+		outputPomResult(compactResult, outPutPomFileName);
+		if (needInflate) {
+			inflateLibs(outPutPomFileName, inputLibPath, inflateOutPath);
 		}
 	}
 

@@ -64,10 +64,14 @@ public class GlobalConfig {
 	}
 
 	private GlobalConfig(String configName) {
+		File file = new File(appRootPath + File.separator + configName);
+		if (!file.exists()) {
+			return;
+		}
+
 		Properties configProperties = new Properties();
 		try {
-			configProperties
-					.load(new BufferedInputStream(new FileInputStream(appRootPath + File.separator + configName)));
+			configProperties.load(new BufferedInputStream(new FileInputStream(file)));
 
 		} catch (FileNotFoundException e) {
 			ToolLogger.getInstance().error("error:", e);

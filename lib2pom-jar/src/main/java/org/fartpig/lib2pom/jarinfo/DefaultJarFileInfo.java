@@ -14,11 +14,13 @@ import java.util.jar.Manifest;
 import org.apache.commons.io.IOUtils;
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.entity.ArtifactObj;
+import org.fartpig.lib2pom.util.StringUtil;
 import org.fartpig.lib2pom.util.ToolLogger;
 
 public class DefaultJarFileInfo implements JarFileInfo {
 
-	private String[] artifactIdAttrs = { "Implementation-Title" };
+	// priority by orders
+	private String[] artifactIdAttrs = { "Implementation-Title", "Extension-Name" };
 	private String[] versionAttrs = { "Implementation-Version" };
 	private List<String> commonPackagePrefix = null;
 
@@ -46,7 +48,7 @@ public class DefaultJarFileInfo implements JarFileInfo {
 		String artifactIdLower = artifactId.toLowerCase();
 		for (String aCommonPackage : commonPackagePrefix) {
 			String prefixLower = aCommonPackage.toLowerCase();
-			if (artifactIdLower.startsWith(prefixLower)) {
+			if (artifactIdLower.startsWith(prefixLower) && !artifactIdLower.equals(prefixLower)) {
 				log.info(String.format("handle common package prefix file name:%s", artifactId));
 
 				int prefixIndex = prefixLower.length() - 1;
@@ -71,6 +73,12 @@ public class DefaultJarFileInfo implements JarFileInfo {
 		try {
 			JarFile jarFile = new JarFile(file);
 			Manifest manifest = jarFile.getManifest();
+
+			// handle no manifest file
+			if (manifest == null) {
+				return null;
+			}
+
 			String artifactId = null;
 			String version = null;
 
@@ -79,7 +87,6 @@ public class DefaultJarFileInfo implements JarFileInfo {
 				for (String aAttr : artifactIdAttrs) {
 					if (aKey.toString().equals(aAttr)) {
 						artifactId = attributes.getValue(aAttr);
-						break;
 					}
 				}
 			}
@@ -130,7 +137,7 @@ public class DefaultJarFileInfo implements JarFileInfo {
 				}
 
 				if (minPathDepths != null) {
-					artifactId = String.join(".", minPathDepths);
+					artifactId = StringUtil.join(".", minPathDepths);
 				}
 
 				// give the default one
@@ -143,11 +150,13 @@ public class DefaultJarFileInfo implements JarFileInfo {
 
 				String artifactIdTemp = commonPackagePrefixHandle(artifactId);
 
+				if (artifactIdTemp == null) {
+					return null;
+				}
+
 				ArtifactObj obj = new ArtifactObj();
 				if (artifactIdTemp != null) {
 					obj.setArtifactId(artifactIdTemp);
-				} else {
-					obj.setArtifactId(artifactId);
 				}
 
 				obj.setPackaging("jar");

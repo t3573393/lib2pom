@@ -48,8 +48,7 @@ public class AppTest extends TestCase {
 		// String[] args = { "-if",
 		// "D:\\workspace-my\\lib2pom\\target\\test-classes\\targetlib", "-p",
 		// "D:\\workspace-my\\test-classes\\lib" };
-		String[] args = { "-if", "D:\\workspace-my\\lib2pom\\target\\test-classes\\ecif-targetlib", "-p",
-				"D:\\ecif-web\\module-web\\target\\ecifconsole-web\\WEB-INF\\lib" };
+		String[] args = { "-if", "D:\\test\\target-lib", "-p", "D:\\test\\lib" };
 		app.main(args);
 	}
 

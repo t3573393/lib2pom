@@ -19,6 +19,7 @@ import org.fartpig.lib2pom.phase.OutputPomResultAction;
 import org.fartpig.lib2pom.phase.PrintOutMergeResultAction;
 import org.fartpig.lib2pom.phase.ResolveFileNamesAction;
 import org.fartpig.lib2pom.phase.RetrieveDependencisAction;
+import org.fartpig.lib2pom.phase.ScanClasspathFileNamesAction;
 import org.fartpig.lib2pom.util.ToolException;
 import org.fartpig.lib2pom.util.ToolLogger;
 
@@ -39,6 +40,7 @@ public class App {
 			String inputLibPath = config.getInputLibPath();
 			String outPutPomFileName = config.getOutPutPomFileName();
 			String inflateOutPath = config.getInflateOutPath();
+			String classpathFile = config.getClasspathFile();
 
 			boolean needInflate = config.isNeedInflate();
 			boolean needPrintoutResult = config.isNeedPrintoutResult();
@@ -73,6 +75,12 @@ public class App {
 						useDefaultLib = useDefaultLib || (i + 1) == lastIndex;
 						log.info(String.format("set inflateOutPath by args:%s", inflateOutPath));
 						log.info(String.format("set needInflate: true"));
+					} else if ("--classpathFile".equals(args[i]) || "-cpf".equals(args[i])) {
+						if ((i + 1) >= args.length) {
+							throw new ToolException(phase, "please set the classpathFile");
+						}
+						classpathFile = args[i + 1];
+						log.info(String.format("set classpathFile by args:%s", classpathFile));
 					}
 				}
 
@@ -87,6 +95,7 @@ public class App {
 			config.setOutPutPomFileName(outPutPomFileName);
 			config.setNeedInflate(needInflate);
 			config.setNeedPrintoutResult(needPrintoutResult);
+			config.setClasspathFile(classpathFile);
 
 			invokeByGlobalConfig(config);
 
@@ -97,15 +106,53 @@ public class App {
 
 	public static void invokeByGlobalConfig(GlobalConfig config) {
 
+		ToolLogger log = ToolLogger.getInstance();
+
 		String inputLibPath = config.getInputLibPath();
 		String outPutPomFileName = config.getOutPutPomFileName();
 		String inflateOutPath = config.getInflateOutPath();
+		String classpathFile = config.getClasspathFile();
 
 		boolean needInflate = config.isNeedInflate();
 		boolean needPrintoutResult = config.isNeedPrintoutResult();
 
 		List<String> libFileNames = fetchFileNames(inputLibPath);
 		List<FileObj> fileObjs = resolveFileNames(libFileNames);
+
+		List<String> classpathFileNames = scanClasspathFileNames(classpathFile);
+		List<FileObj> classpathFileObjs = resolveFileNames(classpathFileNames);
+		// remove the duplicated file objs by classpath
+		if (classpathFileObjs.size() > 0) {
+			List<FileObj> tempFileObjs = new ArrayList<FileObj>();
+			for (FileObj aFileObj : fileObjs) {
+				if (aFileObj instanceof ArtifactObj) {
+					ArtifactObj aArtifactObj = (ArtifactObj) aFileObj;
+					boolean needRemove = false;
+					for (FileObj aClasspathFileObj : classpathFileObjs) {
+						if (aClasspathFileObj instanceof ArtifactObj) {
+							ArtifactObj bArtifactObj = (ArtifactObj) aClasspathFileObj;
+
+							// artifactId same but the version different remove
+							if (aArtifactObj.getArtifactId().equals(bArtifactObj.getArtifactId())
+									&& !aArtifactObj.getVersion().equals(bArtifactObj.getVersion())) {
+								needRemove = true;
+								log.info(String.format("remove the duplicated jar file by classpath: %s",
+										aArtifactObj.getFileFullName()));
+								break;
+							}
+						}
+					}
+
+					if (!needRemove) {
+						tempFileObjs.add(aFileObj);
+					}
+				} else {
+					tempFileObjs.add(aFileObj);
+				}
+			}
+			fileObjs = tempFileObjs;
+		}
+
 		// the DummyObj, try use the jar resolve to do, by
 		// resolveJarFiles
 		List<DummyObj> dummyObjs = filterArtifactObjWithMatcher(fileObjs, new FilterMatcher() {
@@ -161,6 +208,11 @@ public class App {
 	public static List<ArtifactObj> resolveJarFiles(String inputLibPath, List<DummyObj> dummyObjs) {
 		JarResolveAction action = new JarResolveAction();
 		return action.resolveJarFiles(inputLibPath, dummyObjs);
+	}
+
+	public static List<String> scanClasspathFileNames(String classpathFile) {
+		ScanClasspathFileNamesAction action = new ScanClasspathFileNamesAction();
+		return action.scanClasspathFileNames(classpathFile);
 	}
 
 	public interface FilterMatcher {

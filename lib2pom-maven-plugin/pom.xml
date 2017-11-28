@@ -4,9 +4,10 @@
 	<parent>
 		<groupId>org.fartpig</groupId>
 		<artifactId>lib2pom</artifactId>
-		<version>0.3.0-RELEASE</version>
+		<version>0.4.0-RELEASE</version>
 	</parent>
 	<artifactId>lib2pom-maven-plugin</artifactId>
+	<name>lib2pom-maven-plugin</name>
 
 	<properties>
 		<maven.version>3.0.4</maven.version>

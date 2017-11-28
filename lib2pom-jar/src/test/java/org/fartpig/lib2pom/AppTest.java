@@ -1,7 +1,9 @@
 package org.fartpig.lib2pom;
 
+import org.fartpig.lib2pom.constant.GlobalConfig;
 import org.fartpig.lib2pom.constant.GlobalConst;
 import org.fartpig.lib2pom.phase.InflateLibsAction;
+import org.fartpig.lib2pom.phase.ScanClasspathFileNamesAction;
 import org.fartpig.lib2pom.util.ArtifactUtil;
 import org.fartpig.lib2pom.util.ToolException;
 
@@ -52,6 +54,19 @@ public class AppTest extends TestCase {
 		app.main(args);
 	}
 
+	public void testAppArgsWithClassPath() {
+		App app = new App();
+		// String[] args = { "-if",
+		// "D:\\workspace-my\\lib2pom\\target\\test-classes\\targetlib", "-p",
+		// "D:\\workspace-my\\test-classes\\lib" };
+		// String[] args = { "-if",
+		// "D:\\test\\target-lib", "-p",
+		// "D:\\test\\libs" };
+
+		String[] args = { "-cpf", "D:\\test\\.classpath", "-if", "D:\\test\\target-lib", "-p", "D:\\test\\libs" };
+		app.main(args);
+	}
+
 	public void testFilterOutSpecialPrefix() {
 		ArtifactUtil.filterOutSpecialPrefix();
 	}
@@ -61,6 +76,12 @@ public class AppTest extends TestCase {
 		action.inflateLibs("D:\\workspace-my\\lib2pom\\target\\classes\\pom.xml",
 				"D:\\ecif-web\\module-web\\target\\ecifconsole-web\\WEB-INF\\lib",
 				"D:\\workspace-my\\lib2pom\\target\\test-classes\\targetlib");
+	}
+
+	public void testScanClassPath() {
+		GlobalConfig config = GlobalConfig.instance();
+		ScanClasspathFileNamesAction action = new ScanClasspathFileNamesAction();
+		action.scanClasspathFileNames("D:\\.classpath");
 	}
 
 	public void testAppArgs2() {

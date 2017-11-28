@@ -47,6 +47,10 @@ public class Lib2PomMojo extends AbstractMojo {
 				globalConfig.setArchivaBaseUrl(archivaBaseUrl);
 			}
 
+			if (!StringUtils.isEmpty(classpathFile)) {
+				globalConfig.setClasspathFile(classpathFile);
+			}
+
 			if (!StringUtils.isEmpty(archivaRestServicesPath)) {
 				globalConfig.setArchivaRestServicesPath(archivaRestServicesPath);
 			}
@@ -89,6 +93,9 @@ public class Lib2PomMojo extends AbstractMojo {
 
 	@Parameter
 	protected String outPutPomFileName;
+
+	@Parameter
+	protected String classpathFile;
 
 	@Parameter
 	protected String inflateOutPath;

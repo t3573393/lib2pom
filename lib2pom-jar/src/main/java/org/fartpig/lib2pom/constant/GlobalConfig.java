@@ -36,6 +36,7 @@ public class GlobalConfig {
 	private String inputLibPath = String.format("%s%slib", appRootPath, File.separator);
 	private String outPutPomFileName = String.format("%s%spom.xml", appRootPath, File.separator);
 	private String inflateOutPath = String.format("%s%stargetlib", appRootPath, File.separator);
+	private String classpathFile = String.format("%s%s.classpath", appRootPath, File.separator);
 
 	private boolean needInflate = true;
 	private boolean needPrintoutResult = true;
@@ -85,6 +86,7 @@ public class GlobalConfig {
 		inputLibPath = configProperties.getProperty("inputLibPath", inputLibPath);
 		outPutPomFileName = configProperties.getProperty("outPutPomFileName", outPutPomFileName);
 		inflateOutPath = configProperties.getProperty("inflateOutPath", inflateOutPath);
+		classpathFile = configProperties.getProperty("classpathFile", classpathFile);
 
 		needInflate = Boolean.valueOf(configProperties.getProperty("needInflate", String.valueOf(needInflate)));
 		needPrintoutResult = Boolean
@@ -101,6 +103,8 @@ public class GlobalConfig {
 		log.info("inputLibPath:" + inputLibPath);
 		log.info("outPutPomFileName:" + outPutPomFileName);
 		log.info("inflateOutPath:" + inflateOutPath);
+		log.info("classpathFile:" + classpathFile);
+
 		log.info("needInflate:" + needInflate);
 		log.info("needPrintoutResult:" + needPrintoutResult);
 
@@ -110,7 +114,6 @@ public class GlobalConfig {
 		log.info("archivaRestServicesPath:" + archivaRestServicesPath);
 		log.info("archivaUser:" + archivaUser);
 		log.info("archivaPassword:" + archivaPassword);
-
 	}
 
 	public String getInputLibPath() {
@@ -195,6 +198,14 @@ public class GlobalConfig {
 
 	public void setJarInfoSource(String jarInfoSource) {
 		this.jarInfoSource = jarInfoSource;
+	}
+
+	public String getClasspathFile() {
+		return classpathFile;
+	}
+
+	public void setClasspathFile(String classpathFile) {
+		this.classpathFile = classpathFile;
 	}
 
 }

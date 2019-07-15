@@ -109,6 +109,7 @@ public class RetrieveDependencisAction {
 					if (!resolveArtifactSet.contains(aArtifactObj.uniqueName())) {
 						extraArtifactObjs.add(aArtifactObj);
 						artifactObjQueue.add(aArtifactObj);
+						resolveArtifactSet.add(aArtifactObj.uniqueName());
 						ToolLogger.getInstance().info("resolve : " + aArtifactObj.formateFileName() + " get dependency:"
 								+ aObj.formateFileName());
 					}

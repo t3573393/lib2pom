@@ -17,7 +17,7 @@ public class ArtifactObj extends FileObj {
 	private Map<String, ArtifactObj> dependencis = new HashMap<String, ArtifactObj>();
 
 	public String formateFileName() {
-		return String.format("artifactId[%s]-version[%s]-classifier[%s]-packaging[%s]", artifactId, version, classifier,
+		return String.format("repositoryId[%s]-artifactId[%s]-version[%s]-classifier[%s]-packaging[%s]", repositoryId, artifactId, version, classifier,
 				packaging);
 	}
 
@@ -34,7 +34,7 @@ public class ArtifactObj extends FileObj {
 	}
 
 	public String toString() {
-		return String.format("artifactId[%s]-version[%s]-packaging[%s]", artifactId, version, packaging);
+		return String.format("repositoryId[%s]-artifactId[%s]-version[%s]-packaging[%s]", repositoryId, artifactId, version, packaging);
 	}
 
 	public String getGroupId() {
